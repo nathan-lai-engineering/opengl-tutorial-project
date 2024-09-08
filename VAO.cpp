@@ -7,7 +7,7 @@ VAO::VAO()
 }
 
 // Links a VBO to the VAO using a certain layout
-void VAO::LinkVBO(VBO& VBO, GLuint layout)
+void VAO::LinkAttrib(VBO& VBO, GLuint layout, GLuint numComponents, GLenum type, GLsizeiptr stride, void* offset)
 {
 	VBO.Bind();
 
@@ -15,7 +15,7 @@ void VAO::LinkVBO(VBO& VBO, GLuint layout)
 	// 0 is index of vertex attribute, 3 vertex values, type of value is float
 	// integer coordinates is false, amount of data between vertex is just 3 floats,
 	// offset is pointer to beginning of array, which is the start of the array
-	glVertexAttribPointer(layout, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	glVertexAttribPointer(layout, numComponents, type, GL_FALSE, stride, offset);
 	glEnableVertexAttribArray(layout);
 	VBO.Unbind();
 }
