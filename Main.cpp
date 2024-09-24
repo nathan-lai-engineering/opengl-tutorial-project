@@ -12,6 +12,7 @@
 #include"VBO.h"
 #include"EBO.h"
 #include"Texture.h"
+#include"Camera.h"
 
 const unsigned int width = 800;
 const unsigned int height = 800;
@@ -91,9 +92,6 @@ int main()
 	VBO1.Unbind();
 	EBO1.Unbind();
 
-	// get ID of uniform scale
-	GLuint uniID = glGetUniformLocation(shaderProgram.ID, "scale");
-
 	// texture parammeters
 	int widthImg, heightImg, numColCh;
 
@@ -106,8 +104,7 @@ int main()
 	// test for depth to avoid depth glitches
 	glEnable(GL_DEPTH_TEST);
 
-	float rotation = 0.0f;
-	double prevTime = glfwGetTime();
+	Camera camera(width, height, glm::vec3(0.0f, 0.0f, 2.0f));
 
 	while (!glfwWindowShouldClose(window)) 
 	{
@@ -118,13 +115,8 @@ int main()
 		// activate shader program
 		shaderProgram.Activate();
 
-		// rotate by half a degree every 60th of a second
-		double crntTime = glfwGetTime();
-		if (crntTime - prevTime >= 1 / 60) 
-		{
-			rotation += 0.5;
-			prevTime = crntTime;
-		}
+		camera.Inputs(window);
+		camera.Matrix(45.0f, 0.1f, 100.0f, shaderProgram, "camMatrix");
 
 		// local coordinates: origin same as origin of object
 		// world coordinate: origin at center of world, contains objects
@@ -134,38 +126,7 @@ int main()
 
 		// initializing the matrix so it would have values, these are used to move
 		// coordinate systems
-		
-		// model matrix: local coords -> world coords
-		glm::mat4 model = glm::mat4(1.0f);
-
-		// view matrix: world coords -> view coords
-		glm::mat4 view = glm::mat4(1.0f);
-
-		// projection matrix: view coords -> clip coords
-		glm::mat4 proj = glm::mat4(1.0f);
-
-
-		model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
-
-		// translate the world a bit so we can see the object
-		view = glm::translate(view, glm::vec3(0.0f, -0.5f, -2.0f));
-
-		// 0.1f is minimum distance to redner, 100.0f is maxium distance to render
-		// anything beyond that range is clipped off
-		// degrees are converted to radians
-		proj = glm::perspective(glm::radians(45.0f), (float)(width / height), 0.1f, 100.0f);
-
-		int modelLoc = glGetUniformLocation(shaderProgram.ID, "model");
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-
-		int viewLoc = glGetUniformLocation(shaderProgram.ID, "view");
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-
-		int projLoc = glGetUniformLocation(shaderProgram.ID, "proj");
-		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proj));
-
-		// assign value to uniform which must be done after activating shader program
-		glUniform1f(uniID, 0.5f);
+	
 
 		// bind texture so it appears
 		penguinTex.Bind();
